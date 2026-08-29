@@ -10,7 +10,7 @@ function shuffle(array) {
   return arr
 }
 
-export default function StudyScreen({ filters, onFinish }) {
+export default function StudyScreen({ filters, onFinish, onQuit }) {
   const [questions, setQuestions] = useState([])
   const [index, setIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
@@ -80,6 +80,11 @@ export default function StudyScreen({ filters, onFinish }) {
     [questions, index, results, onFinish]
   )
 
+  function handleQuit() {
+    if (!confirm('とちゅうでやめますか？ここまでの記録は保存されます。')) return
+    onQuit({ ...results, total: results.correct + results.incorrect })
+  }
+
   if (loading) return <div className="loading">読み込み中...</div>
   if (questions.length === 0) return <div className="loading">問題がありません</div>
 
@@ -87,8 +92,13 @@ export default function StudyScreen({ filters, onFinish }) {
 
   return (
     <div className="study-screen">
-      <div className="progress">
-        {index + 1} / {questions.length}
+      <div className="study-header">
+        <div className="progress">
+          {index + 1} / {questions.length}
+        </div>
+        <button className="quit-button" onClick={handleQuit}>
+          とちゅうでやめる
+        </button>
       </div>
 
       <div className="question-card">

@@ -18,6 +18,11 @@ export default function StudyPage() {
     setStage('result')
   }
 
+  function handleQuit(r) {
+    setResult({ ...r, interrupted: true })
+    setStage('result')
+  }
+
   function handleRestart() {
     setFilters(null)
     setResult(null)
@@ -25,7 +30,7 @@ export default function StudyPage() {
   }
 
   if (stage === 'setup') return <SetupScreen onStart={handleStart} />
-  if (stage === 'study') return <StudyScreen filters={filters} onFinish={handleFinish} />
+  if (stage === 'study') return <StudyScreen filters={filters} onFinish={handleFinish} onQuit={handleQuit} />
   if (stage === 'result') return <ResultScreen result={result} onRestart={handleRestart} />
   return null
 }

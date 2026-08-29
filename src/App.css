@@ -105,10 +105,26 @@ body {
   cursor: pointer;
 }
 
+.study-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.quit-button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  color: #999;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .progress {
   text-align: center;
   color: #999;
-  margin-bottom: 12px;
 }
 
 .question-card {
