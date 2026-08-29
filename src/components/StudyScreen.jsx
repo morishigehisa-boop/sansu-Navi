@@ -115,7 +115,7 @@ export default function StudyScreen({ filters, onFinish, onQuit }) {
         {showAnswer ? (
           <div className="answer-box">
             <p className="answer-label">こたえ</p>
-            <p className="answer-text">{current.answer}</p>
+            {current.answer && <p className="answer-text">{current.answer}</p>}
             {current.answer_image_urls?.length > 0 && (
               <div className="question-images">
                 {current.answer_image_urls.map((url, i) => (

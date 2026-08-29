@@ -176,8 +176,8 @@ export default function AdminPanel() {
     const finalUnit = (unit || newUnitInput).trim()
     const finalSource = (sourceName || newSourceInput).trim()
 
-    if (!finalUnit || !answer.trim()) {
-      setMessage('単元と答えは必須です')
+    if (!finalUnit || (!answer.trim() && answerImageFiles.length === 0)) {
+      setMessage('単元は必須です。答えはテキストか画像のどちらかを入力してください')
       return
     }
     setUploading(true)
@@ -199,7 +199,7 @@ export default function AdminPanel() {
         unit: finalUnit,
         difficulty,
         question_text: questionText.trim(),
-        answer: answer.trim(),
+        answer: answer.trim() || null,
         image_urls: imageUrls,
         answer_image_urls: answerImageUrls,
         source_name: finalSource || null,
@@ -354,12 +354,12 @@ export default function AdminPanel() {
         )}
 
         <label>
-          答え
+          答え（テキストまたは画像のどちらか）
           <input
             type="text"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="答え"
+            placeholder="答え（画像のみで登録する場合は空欄可）"
           />
         </label>
 
