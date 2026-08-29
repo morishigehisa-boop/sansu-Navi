@@ -296,6 +296,101 @@ body {
   color: #d9640a;
 }
 
+.new-option-input {
+  margin-top: 6px;
+}
+
+.options-manager-toggle {
+  margin-top: 16px;
+  padding: 8px 14px;
+  border: 1px solid #ff8c42;
+  border-radius: 8px;
+  background: white;
+  color: #d9640a;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.options-manager {
+  margin-top: 16px;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.options-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.options-manager-header h3 {
+  margin: 0;
+}
+
+.options-manager-header button {
+  border: none;
+  background: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.options-manager-section {
+  margin-top: 16px;
+}
+
+.options-manager-section h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.options-manager-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+}
+
+.options-manager-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.options-manager-list li button {
+  border: none;
+  background: none;
+  color: #f44336;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.options-manager-add {
+  display: flex;
+  gap: 8px;
+}
+
+.options-manager-add input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.options-manager-add button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #ff8c42;
+  color: white;
+  cursor: pointer;
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../sb'
 import CropModal from './CropModal'
+import OptionsManager from './OptionsManager'
 
 const DIFFICULTIES = [
   { value: 'easy', label: '易しい' },
@@ -8,12 +9,23 @@ const DIFFICULTIES = [
   { value: 'hard', label: '難しい' },
 ]
 
+const NEW_OPTION_VALUE = '__new__'
+const LAST_UNIT_KEY = 'sansu_last_unit'
+const LAST_SOURCE_KEY = 'sansu_last_source'
+
 export default function AdminPanel() {
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
 
+  const [units, setUnits] = useState([])
+  const [sources, setSources] = useState([])
+
   const [unit, setUnit] = useState('')
+  const [newUnitInput, setNewUnitInput] = useState('')
+  const [sourceName, setSourceName] = useState('')
+  const [newSourceInput, setNewSourceInput] = useState('')
+
   const [difficulty, setDifficulty] = useState('normal')
   const [questionText, setQuestionText] = useState('')
   const [answer, setAnswer] = useState('')
@@ -21,13 +33,64 @@ export default function AdminPanel() {
   const [answerImageFiles, setAnswerImageFiles] = useState([])
   const [cropQueue, setCropQueue] = useState([]) // [{file, target: 'question'|'answer'}]
   const [croppingItem, setCroppingItem] = useState(null)
-  const [sourceName, setSourceName] = useState('')
   const [pageNumber, setPageNumber] = useState('')
   const [message, setMessage] = useState('')
 
   useEffect(() => {
     loadQuestions()
+    loadOptions()
   }, [])
+
+  async function loadOptions() {
+    const { data } = await supabase
+      .from('sansu_meta_options')
+      .select('*')
+      .order('name')
+    const unitList = (data || []).filter((o) => o.option_type === 'unit')
+    const sourceList = (data || []).filter((o) => o.option_type === 'source')
+    setUnits(unitList)
+    setSources(sourceList)
+
+    // 前回選択したものを初期値に（まだ選ばれていない場合のみ）
+    const lastUnit = localStorage.getItem(LAST_UNIT_KEY)
+    if (lastUnit && unitList.some((u) => u.name === lastUnit)) {
+      setUnit((prev) => prev || lastUnit)
+    }
+    const lastSource = localStorage.getItem(LAST_SOURCE_KEY)
+    if (lastSource && sourceList.some((s) => s.name === lastSource)) {
+      setSourceName((prev) => prev || lastSource)
+    }
+  }
+
+  async function registerOptionIfNew(type, name) {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    await supabase
+      .from('sansu_meta_options')
+      .insert({ option_type: type, name: trimmed })
+      .select()
+    loadOptions()
+  }
+
+  function handleUnitSelect(value) {
+    if (value === NEW_OPTION_VALUE) {
+      setUnit('')
+      setNewUnitInput('')
+    } else {
+      setUnit(value)
+      setNewUnitInput('')
+    }
+  }
+
+  function handleSourceSelect(value) {
+    if (value === NEW_OPTION_VALUE) {
+      setSourceName('')
+      setNewSourceInput('')
+    } else {
+      setSourceName(value)
+      setNewSourceInput('')
+    }
+  }
 
   useEffect(() => {
     if (!croppingItem && cropQueue.length > 0) {
@@ -110,7 +173,10 @@ export default function AdminPanel() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!unit.trim() || !answer.trim()) {
+    const finalUnit = (unit || newUnitInput).trim()
+    const finalSource = (sourceName || newSourceInput).trim()
+
+    if (!finalUnit || !answer.trim()) {
       setMessage('単元と答えは必須です')
       return
     }
@@ -130,23 +196,35 @@ export default function AdminPanel() {
       }
 
       const { error } = await supabase.from('sansu_questions').insert({
-        unit: unit.trim(),
+        unit: finalUnit,
         difficulty,
         question_text: questionText.trim(),
         answer: answer.trim(),
         image_urls: imageUrls,
         answer_image_urls: answerImageUrls,
-        source_name: sourceName.trim() || null,
+        source_name: finalSource || null,
         page_number: pageNumber.trim() || null,
       })
       if (error) throw error
+
+      // 新規入力があればオプションリストに登録
+      if (newUnitInput.trim()) await registerOptionIfNew('unit', newUnitInput)
+      if (newSourceInput.trim()) await registerOptionIfNew('source', newSourceInput)
+
+      // 前回選択値として記憶
+      localStorage.setItem(LAST_UNIT_KEY, finalUnit)
+      if (finalSource) localStorage.setItem(LAST_SOURCE_KEY, finalSource)
+
+      setUnit(finalUnit)
+      setSourceName(finalSource)
+      setNewUnitInput('')
+      setNewSourceInput('')
 
       setMessage('登録しました')
       setQuestionText('')
       setAnswer('')
       setImageFiles([])
       setAnswerImageFiles([])
-      e.target.reset?.()
       loadQuestions()
     } catch (err) {
       setMessage('エラー: ' + err.message)
@@ -168,12 +246,27 @@ export default function AdminPanel() {
       <form onSubmit={handleSubmit} className="admin-form">
         <label>
           テスト／教材名
-          <input
-            type="text"
-            value={sourceName}
-            onChange={(e) => setSourceName(e.target.value)}
-            placeholder="例: 5年生算数ドリル上巻"
-          />
+          <select
+            value={sources.some((s) => s.name === sourceName) ? sourceName : sourceName ? NEW_OPTION_VALUE : ''}
+            onChange={(e) => handleSourceSelect(e.target.value)}
+          >
+            <option value="">選択してください</option>
+            {sources.map((s) => (
+              <option key={s.id} value={s.name}>
+                {s.name}
+              </option>
+            ))}
+            <option value={NEW_OPTION_VALUE}>＋ 新しく追加</option>
+          </select>
+          {(sourceName === '' || !sources.some((s) => s.name === sourceName)) && (
+            <input
+              type="text"
+              value={newSourceInput}
+              onChange={(e) => setNewSourceInput(e.target.value)}
+              placeholder="新しい教材名を入力"
+              className="new-option-input"
+            />
+          )}
         </label>
 
         <label>
@@ -188,12 +281,27 @@ export default function AdminPanel() {
 
         <label>
           単元
-          <input
-            type="text"
-            value={unit}
-            onChange={(e) => setUnit(e.target.value)}
-            placeholder="例: 分数、割合、図形"
-          />
+          <select
+            value={units.some((u) => u.name === unit) ? unit : unit ? NEW_OPTION_VALUE : ''}
+            onChange={(e) => handleUnitSelect(e.target.value)}
+          >
+            <option value="">選択してください</option>
+            {units.map((u) => (
+              <option key={u.id} value={u.name}>
+                {u.name}
+              </option>
+            ))}
+            <option value={NEW_OPTION_VALUE}>＋ 新しく追加</option>
+          </select>
+          {(unit === '' || !units.some((u) => u.name === unit)) && (
+            <input
+              type="text"
+              value={newUnitInput}
+              onChange={(e) => setNewUnitInput(e.target.value)}
+              placeholder="新しい単元名を入力"
+              className="new-option-input"
+            />
+          )}
         </label>
 
         <label>
@@ -289,6 +397,8 @@ export default function AdminPanel() {
 
         {message && <p className="admin-message">{message}</p>}
       </form>
+
+      <OptionsManager units={units} sources={sources} onChange={loadOptions} />
 
       <h2>登録済み問題（最新200件）</h2>
       {loading ? (
