@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../sb'
+import CropModal from './CropModal'
 
 const DIFFICULTIES = [
   { value: 'easy', label: '易しい' },
@@ -18,6 +19,8 @@ export default function AdminPanel() {
   const [answer, setAnswer] = useState('')
   const [imageFiles, setImageFiles] = useState([])
   const [answerImageFiles, setAnswerImageFiles] = useState([])
+  const [cropQueue, setCropQueue] = useState([]) // [{file, target: 'question'|'answer'}]
+  const [croppingItem, setCroppingItem] = useState(null)
   const [sourceName, setSourceName] = useState('')
   const [pageNumber, setPageNumber] = useState('')
   const [message, setMessage] = useState('')
@@ -25,6 +28,31 @@ export default function AdminPanel() {
   useEffect(() => {
     loadQuestions()
   }, [])
+
+  useEffect(() => {
+    if (!croppingItem && cropQueue.length > 0) {
+      setCroppingItem(cropQueue[0])
+      setCropQueue((prev) => prev.slice(1))
+    }
+  }, [cropQueue, croppingItem])
+
+  function queueFilesForCrop(fileList, target) {
+    const files = Array.from(fileList || [])
+    setCropQueue((prev) => [...prev, ...files.map((file) => ({ file, target }))])
+  }
+
+  function handleCropConfirm(croppedFile) {
+    if (croppingItem.target === 'question') {
+      setImageFiles((prev) => [...prev, croppedFile])
+    } else {
+      setAnswerImageFiles((prev) => [...prev, croppedFile])
+    }
+    setCroppingItem(null)
+  }
+
+  function handleCropCancel() {
+    setCroppingItem(null)
+  }
 
   async function loadQuestions() {
     setLoading(true)
@@ -195,7 +223,10 @@ export default function AdminPanel() {
             type="file"
             accept="image/*"
             multiple
-            onChange={(e) => setImageFiles((prev) => [...prev, ...Array.from(e.target.files || [])])}
+            onChange={(e) => {
+              queueFilesForCrop(e.target.files, 'question')
+              e.target.value = ''
+            }}
           />
         </label>
         {imageFiles.length > 0 && (
@@ -230,9 +261,10 @@ export default function AdminPanel() {
             type="file"
             accept="image/*"
             multiple
-            onChange={(e) =>
-              setAnswerImageFiles((prev) => [...prev, ...Array.from(e.target.files || [])])
-            }
+            onChange={(e) => {
+              queueFilesForCrop(e.target.files, 'answer')
+              e.target.value = ''
+            }}
           />
         </label>
         {answerImageFiles.length > 0 && (
@@ -304,6 +336,14 @@ export default function AdminPanel() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {croppingItem && (
+        <CropModal
+          file={croppingItem.file}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
       )}
     </div>
   )

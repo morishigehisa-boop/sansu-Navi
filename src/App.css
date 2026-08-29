@@ -310,3 +310,106 @@ body {
   padding: 6px 8px;
   text-align: left;
 }
+
+.crop-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.crop-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  max-width: 380px;
+  width: 100%;
+}
+
+.crop-modal-title {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 12px;
+}
+
+.crop-modal-image-wrap {
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.crop-modal-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.crop-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.crop-rect {
+  position: absolute;
+  border: 2px solid #ff8c42;
+  box-sizing: border-box;
+  cursor: move;
+  touch-action: none;
+}
+
+.crop-handle {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: #ff8c42;
+  border: 2px solid white;
+  border-radius: 50%;
+  touch-action: none;
+}
+
+.crop-handle-nw {
+  left: -11px;
+  top: -11px;
+  cursor: nwse-resize;
+}
+
+.crop-handle-ne {
+  right: -11px;
+  top: -11px;
+  cursor: nesw-resize;
+}
+
+.crop-handle-sw {
+  left: -11px;
+  bottom: -11px;
+  cursor: nesw-resize;
+}
+
+.crop-handle-se {
+  right: -11px;
+  bottom: -11px;
+  cursor: nwse-resize;
+}
+
+.crop-modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.crop-modal-buttons .primary-button,
+.crop-modal-buttons .secondary-button {
+  margin-top: 0;
+}
