@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
-const DISPLAY_MAX = 340
 const HANDLE_SIZE = 22
+
+function getDisplayMax() {
+  if (typeof window === 'undefined') return 340
+  return Math.min(window.innerWidth - 48, 520)
+}
 
 export default function CropModal({ file, onConfirm, onCancel }) {
   const imgRef = useRef(null)
@@ -19,7 +23,8 @@ export default function CropModal({ file, onConfirm, onCancel }) {
 
   function handleImageLoad() {
     const img = imgRef.current
-    const scale = Math.min(DISPLAY_MAX / img.naturalWidth, DISPLAY_MAX / img.naturalHeight, 1)
+    const displayMax = getDisplayMax()
+    const scale = Math.min(displayMax / img.naturalWidth, displayMax / img.naturalHeight, 1)
     const w = img.naturalWidth * scale
     const h = img.naturalHeight * scale
     setDisplaySize({ w, h })
@@ -47,6 +52,7 @@ export default function CropModal({ file, onConfirm, onCancel }) {
   function startDrag(mode) {
     return (e) => {
       e.preventDefault()
+      e.stopPropagation()
       const p = getPoint(e)
       dragState.current = { mode, startX: p.x, startY: p.y, startRect: { ...rect } }
     }
@@ -137,7 +143,7 @@ export default function CropModal({ file, onConfirm, onCancel }) {
         <div
           className="crop-modal-image-wrap"
           ref={containerRef}
-          style={{ width: displaySize.w || DISPLAY_MAX, height: displaySize.h || DISPLAY_MAX }}
+          style={{ width: displaySize.w || getDisplayMax(), height: displaySize.h || getDisplayMax() }}
         >
           <img
             ref={imgRef}
