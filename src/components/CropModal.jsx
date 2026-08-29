@@ -16,6 +16,14 @@ export default function CropModal({ file, onConfirm, onCancel }) {
   const dragState = useRef(null)
 
   useEffect(() => {
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [])
+
+  useEffect(() => {
     const url = URL.createObjectURL(file)
     setImgUrl(url)
     return () => URL.revokeObjectURL(url)
@@ -61,6 +69,7 @@ export default function CropModal({ file, onConfirm, onCancel }) {
   useEffect(() => {
     function onMove(e) {
       if (!dragState.current) return
+      if (e.cancelable) e.preventDefault()
       const p = getPoint(e)
       const dx = p.x - dragState.current.startX
       const dy = p.y - dragState.current.startY
