@@ -16,7 +16,7 @@ export default function AdminPanel() {
   const [difficulty, setDifficulty] = useState('normal')
   const [questionText, setQuestionText] = useState('')
   const [answer, setAnswer] = useState('')
-  const [imageFile, setImageFile] = useState(null)
+  const [imageFiles, setImageFiles] = useState([])
   const [sourceName, setSourceName] = useState('')
   const [pageNumber, setPageNumber] = useState('')
   const [message, setMessage] = useState('')
@@ -88,9 +88,10 @@ export default function AdminPanel() {
     setUploading(true)
     setMessage('')
     try {
-      let imageUrl = null
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile)
+      const imageUrls = []
+      for (const file of imageFiles) {
+        const url = await uploadImage(file)
+        imageUrls.push(url)
       }
 
       const { error } = await supabase.from('sansu_questions').insert({
@@ -98,7 +99,7 @@ export default function AdminPanel() {
         difficulty,
         question_text: questionText.trim(),
         answer: answer.trim(),
-        image_url: imageUrl,
+        image_urls: imageUrls,
         source_name: sourceName.trim() || null,
         page_number: pageNumber.trim() || null,
       })
@@ -107,7 +108,7 @@ export default function AdminPanel() {
       setMessage('登録しました')
       setQuestionText('')
       setAnswer('')
-      setImageFile(null)
+      setImageFiles([])
       e.target.reset?.()
       loadQuestions()
     } catch (err) {
@@ -180,13 +181,29 @@ export default function AdminPanel() {
         </label>
 
         <label>
-          画像（図形問題など）
+          画像（図形問題など、複数登録可）
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+            multiple
+            onChange={(e) => setImageFiles((prev) => [...prev, ...Array.from(e.target.files || [])])}
           />
         </label>
+        {imageFiles.length > 0 && (
+          <div className="image-file-list">
+            {imageFiles.map((f, i) => (
+              <span key={i} className="image-file-chip">
+                {f.name}
+                <button
+                  type="button"
+                  onClick={() => setImageFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
 
         <label>
           答え
@@ -234,7 +251,7 @@ export default function AdminPanel() {
                 <td>{q.difficulty}</td>
                 <td>{q.question_text}</td>
                 <td>{q.answer}</td>
-                <td>{q.image_url ? '✓' : ''}</td>
+                <td>{q.image_urls?.length > 0 ? `${q.image_urls.length}枚` : ''}</td>
                 <td>{q.consecutive_correct}</td>
                 <td>{q.is_mastered ? '✓' : ''}</td>
                 <td>

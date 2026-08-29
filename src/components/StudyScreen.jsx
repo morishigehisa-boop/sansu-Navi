@@ -94,8 +94,12 @@ export default function StudyScreen({ filters, onFinish }) {
       <div className="question-card">
         <div className="unit-badge">{current.unit}</div>
         <p className="question-text">{current.question_text}</p>
-        {current.image_url && (
-          <img src={current.image_url} alt="問題の図" className="question-image" />
+        {current.image_urls?.length > 0 && (
+          <div className="question-images">
+            {current.image_urls.map((url, i) => (
+              <img key={i} src={url} alt="問題の図" className="question-image" />
+            ))}
+          </div>
         )}
 
         {showAnswer ? (
