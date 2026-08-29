@@ -66,6 +66,15 @@ body {
   color: #666;
 }
 
+.mastered-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
 .primary-button {
   width: 100%;
   padding: 14px;

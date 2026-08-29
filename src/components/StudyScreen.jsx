@@ -22,11 +22,15 @@ export default function StudyScreen({ filters, onFinish }) {
   }, [])
 
   async function loadQuestions() {
-    const { data, error } = await supabase
+    let query = supabase
       .from('sansu_questions')
       .select('*')
       .in('unit', filters.units)
       .in('difficulty', filters.difficulties)
+    if (filters.excludeMastered) {
+      query = query.eq('is_mastered', false)
+    }
+    const { data, error } = await query
     if (!error && data) {
       setQuestions(shuffle(data))
     }
@@ -38,10 +42,24 @@ export default function StudyScreen({ filters, onFinish }) {
       const current = questions[index]
       if (!current) return
 
+      const now = new Date().toISOString()
+
       await supabase.from('sansu_answer_logs').insert({
         question_id: current.id,
         is_correct: isCorrect,
       })
+
+      const newConsecutive = isCorrect ? (current.consecutive_correct || 0) + 1 : 0
+      const newMastered = newConsecutive >= 3
+
+      await supabase
+        .from('sansu_questions')
+        .update({
+          consecutive_correct: newConsecutive,
+          is_mastered: newMastered,
+          last_answered_at: now,
+        })
+        .eq('id', current.id)
 
       setResults((prev) => ({
         correct: prev.correct + (isCorrect ? 1 : 0),

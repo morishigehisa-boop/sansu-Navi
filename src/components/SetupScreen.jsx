@@ -11,6 +11,7 @@ export default function SetupScreen({ onStart }) {
   const [units, setUnits] = useState([])
   const [selectedUnits, setSelectedUnits] = useState([])
   const [selectedDifficulties, setSelectedDifficulties] = useState(['easy', 'normal', 'hard'])
+  const [excludeMastered, setExcludeMastered] = useState(false)
   const [questionCount, setQuestionCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
@@ -20,7 +21,7 @@ export default function SetupScreen({ onStart }) {
 
   useEffect(() => {
     updateCount()
-  }, [selectedUnits, selectedDifficulties])
+  }, [selectedUnits, selectedDifficulties, excludeMastered])
 
   async function loadUnits() {
     const { data, error } = await supabase
@@ -39,11 +40,15 @@ export default function SetupScreen({ onStart }) {
       setQuestionCount(0)
       return
     }
-    const { count, error } = await supabase
+    let query = supabase
       .from('sansu_questions')
       .select('id', { count: 'exact', head: true })
       .in('unit', selectedUnits)
       .in('difficulty', selectedDifficulties)
+    if (excludeMastered) {
+      query = query.eq('is_mastered', false)
+    }
+    const { count, error } = await query
     if (!error) setQuestionCount(count || 0)
   }
 
@@ -99,12 +104,27 @@ export default function SetupScreen({ onStart }) {
         ))}
       </div>
 
+      <label className="mastered-filter">
+        <input
+          type="checkbox"
+          checked={excludeMastered}
+          onChange={(e) => setExcludeMastered(e.target.checked)}
+        />
+        できるようになった問題（3回連続正解）を除く
+      </label>
+
       <p className="question-count">対象問題数: {questionCount}問</p>
 
       <button
         className="primary-button"
         disabled={questionCount === 0}
-        onClick={() => onStart({ units: selectedUnits, difficulties: selectedDifficulties })}
+        onClick={() =>
+          onStart({
+            units: selectedUnits,
+            difficulties: selectedDifficulties,
+            excludeMastered,
+          })
+        }
       >
         はじめる
       </button>

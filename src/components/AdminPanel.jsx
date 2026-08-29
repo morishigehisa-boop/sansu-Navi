@@ -219,6 +219,9 @@ export default function AdminPanel() {
               <th>問題文</th>
               <th>答え</th>
               <th>画像</th>
+              <th>連続正解</th>
+              <th>習得</th>
+              <th>最終回答</th>
               <th></th>
             </tr>
           </thead>
@@ -232,6 +235,13 @@ export default function AdminPanel() {
                 <td>{q.question_text}</td>
                 <td>{q.answer}</td>
                 <td>{q.image_url ? '✓' : ''}</td>
+                <td>{q.consecutive_correct}</td>
+                <td>{q.is_mastered ? '✓' : ''}</td>
+                <td>
+                  {q.last_answered_at
+                    ? new Date(q.last_answered_at).toLocaleDateString('ja-JP')
+                    : ''}
+                </td>
                 <td>
                   <button onClick={() => handleDelete(q.id)}>削除</button>
                 </td>
