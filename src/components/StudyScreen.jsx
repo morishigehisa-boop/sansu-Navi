@@ -106,6 +106,13 @@ export default function StudyScreen({ filters, onFinish }) {
           <div className="answer-box">
             <p className="answer-label">こたえ</p>
             <p className="answer-text">{current.answer}</p>
+            {current.answer_image_urls?.length > 0 && (
+              <div className="question-images">
+                {current.answer_image_urls.map((url, i) => (
+                  <img key={i} src={url} alt="答えの図" className="question-image" />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <button className="secondary-button" onClick={() => setShowAnswer(true)}>
