@@ -17,6 +17,8 @@ export default function AdminPanel() {
   const [questionText, setQuestionText] = useState('')
   const [answer, setAnswer] = useState('')
   const [imageFile, setImageFile] = useState(null)
+  const [sourceName, setSourceName] = useState('')
+  const [pageNumber, setPageNumber] = useState('')
   const [message, setMessage] = useState('')
 
   useEffect(() => {
@@ -97,6 +99,8 @@ export default function AdminPanel() {
         question_text: questionText.trim(),
         answer: answer.trim(),
         image_url: imageUrl,
+        source_name: sourceName.trim() || null,
+        page_number: pageNumber.trim() || null,
       })
       if (error) throw error
 
@@ -124,6 +128,26 @@ export default function AdminPanel() {
       <h1>管理パネル</h1>
 
       <form onSubmit={handleSubmit} className="admin-form">
+        <label>
+          テスト／教材名
+          <input
+            type="text"
+            value={sourceName}
+            onChange={(e) => setSourceName(e.target.value)}
+            placeholder="例: 5年生算数ドリル上巻"
+          />
+        </label>
+
+        <label>
+          ページ数
+          <input
+            type="text"
+            value={pageNumber}
+            onChange={(e) => setPageNumber(e.target.value)}
+            placeholder="例: 12"
+          />
+        </label>
+
         <label>
           単元
           <input
@@ -188,6 +212,8 @@ export default function AdminPanel() {
         <table className="admin-table">
           <thead>
             <tr>
+              <th>教材名</th>
+              <th>ページ</th>
               <th>単元</th>
               <th>難易度</th>
               <th>問題文</th>
@@ -199,6 +225,8 @@ export default function AdminPanel() {
           <tbody>
             {questions.map((q) => (
               <tr key={q.id}>
+                <td>{q.source_name}</td>
+                <td>{q.page_number}</td>
                 <td>{q.unit}</td>
                 <td>{q.difficulty}</td>
                 <td>{q.question_text}</td>
